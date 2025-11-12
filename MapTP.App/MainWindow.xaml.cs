@@ -565,6 +565,12 @@ namespace MapTP.App
         }
 
         private bool lastTip;
+        // Tap/Drag detection state (improves separating discrete taps from drags)
+        private DateTime fingerDownTime;
+        private int fingerStartAbsX, fingerStartAbsY; // starting absolute (0..65535) mapped coordinates
+        private bool mouseDownSent; // whether we already issued a real left down (drag scenario)
+        private const int TapDurationThresholdMs =180; // max duration to still count as a tap before auto-convert to drag
+        private const int TapMovementThresholdAbs =1200; // movement threshold in absolute coordinate units (~2% of65535 width)
 
         /// <summary>
         /// This method is for processing touchpad inputs
@@ -588,7 +594,7 @@ namespace MapTP.App
                         {
                             if (x.Identifier == 0) // limiting ContactId(Identifier) to 0 is to read the first finger
                             {
-                                var curTip = x.IsButtonDown.Value;
+                                var curTip = x.IsButtonDown.Value; // finger touching surface
                                 if (started)
                                 {
                                     try
@@ -596,28 +602,60 @@ namespace MapTP.App
                                         int X, Y;
                                         X = (tpsx <= x.X ?
                                                 (tpex >= x.X ?
-                                                    (int)Math.Floor((((decimal)(x.X - tpsx) / tpgx * scgx) + scsx) / ScreenSizeX * 65535)
-                                                : (int)Math.Floor((decimal)scex / ScreenSizeX * 65535))
-                                            : (int)Math.Floor((decimal)scsx / ScreenSizeX * 65535));
+                                                    (int)Math.Floor((((decimal)(x.X - tpsx) / tpgx * scgx) + scsx) / ScreenSizeX *65535)
+                                                : (int)Math.Floor((decimal)scex / ScreenSizeX *65535))
+                                            : (int)Math.Floor((decimal)scsx / ScreenSizeX *65535));
                                         Y = (tpsy <= x.Y ?
                                                 (tpey >= x.Y ?
-                                                    (int)Math.Floor((((decimal)(x.Y - tpsy) / tpgy * scgy) + scsy) / ScreenSizeY * 65535)
-                                                : (int)Math.Floor((decimal)scey / ScreenSizeY * 65535))
-                                            : (int)Math.Floor((decimal)scsy / ScreenSizeY * 65535));
+                                                    (int)Math.Floor((((decimal)(x.Y - tpsy) / tpgy * scgy) + scsy) / ScreenSizeY *65535)
+                                                : (int)Math.Floor((decimal)scey / ScreenSizeY *65535))
+                                            : (int)Math.Floor((decimal)scsy / ScreenSizeY *65535));
+
+                                        // Always move pointer (for visual feedback)
                                         mouseProcessor.MoveCursor(X, Y);
+
+                                        // Enhanced tap vs drag logic only when turtle mode is enabled (click simulation enabled)
                                         if (turtle)
                                         {
-                                            if (lastTip != curTip)
+                                            if (!lastTip && curTip)
                                             {
-                                                if (curTip)
+                                                // Finger just touched: start possible tap
+                                                fingerDownTime = DateTime.UtcNow;
+                                                fingerStartAbsX = X;
+                                                fingerStartAbsY = Y;
+                                                mouseDownSent = false; // not yet a drag
+                                            }
+                                            else if (lastTip && curTip)
+                                            {
+                                                // Finger is still down; decide if we should convert to drag
+                                                if (!mouseDownSent)
                                                 {
+                                                    double elapsed = (DateTime.UtcNow - fingerDownTime).TotalMilliseconds;
+                                                    int deltaAbs = Math.Max(Math.Abs(X - fingerStartAbsX), Math.Abs(Y - fingerStartAbsY));
+                                                    if (elapsed > TapDurationThresholdMs || deltaAbs > TapMovementThresholdAbs)
+                                                    {
+                                                        // Became a drag: send down now
+                                                        mouseProcessor.MouseDown();
+                                                        mouseDownSent = true;
+                                                    }
+                                                }
+                                            }
+                                            else if (lastTip && !curTip)
+                                            {
+                                                // Finger lifted
+                                                if (!mouseDownSent)
+                                                {
+                                                    // Treat as discrete tap: emit down+up quickly
                                                     mouseProcessor.MouseDown();
+                                                    mouseProcessor.MouseUp();
                                                 }
                                                 else
                                                 {
+                                                    // End drag
                                                     mouseProcessor.MouseUp();
                                                 }
-                                            } 
+                                                mouseDownSent = false;
+                                            }
                                         }
                                     }
                                     catch (Exception e)
@@ -625,7 +663,7 @@ namespace MapTP.App
                                         HandyControl.Controls.MessageBox.Show(e.ToString());
                                     }
                                 }
-                                lastTip = curTip;
+                                lastTip = curTip; // update last state after processing
                             }
                         }
                         /*
