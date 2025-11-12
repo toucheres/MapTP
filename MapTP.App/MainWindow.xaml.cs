@@ -155,22 +155,23 @@ namespace MapTP.App
             }
         }
 
-        private void TrayShowWindowClick(object sender, RoutedEventArgs e) {
+        private void TrayShowWindowClick(object sender, RoutedEventArgs e)
+        {
             TrayShowMenuItem.IsEnabled = false;
-            this.Visibility= Visibility.Visible;
+            this.Visibility = Visibility.Visible;
             this.ShowInTaskbar = true;
         }
 
         private void TurtleCBClick(object sender, RoutedEventArgs e)
         {
-            this.turtle=TurtleCB.IsChecked.Value;
+            this.turtle = TurtleCB.IsChecked.Value;
         }
 
         private void InspectorButtonClick(object sender, RoutedEventArgs e)
         {
             if (started) StopButtonClick(new object(), new RoutedEventArgs());
-            var w= new InspectorWindow(scsx, scsy, scex, scey);
-            
+            var w = new InspectorWindow(scsx, scsy, scex, scey);
+
             w.SendScreenArea = ReceiveScreenArea;
             w.MainWindow_Start = StartButtonClick;
             w.MainWindow_Stop = StopButtonClick;
@@ -199,7 +200,7 @@ namespace MapTP.App
                 {
                     Tpey.Text = TouchpadSizeY.ToString();
                     var width = ((int)Math.Floor((double)TouchpadSizeY / ScreenSizeY * ScreenSizeX));
-                    var margin=(TouchpadSizeX - width)/2;
+                    var margin = (TouchpadSizeX - width) / 2;
                     Tpsx.Text = margin.ToString();
                     Tpex.Text = (width + margin).ToString();
                 }
@@ -224,8 +225,8 @@ namespace MapTP.App
                 this.Visibility = Visibility.Hidden;
                 this.ShowInTaskbar = false;
                 TrayShowMenuItem.IsEnabled = true;
-                 new ToastContentBuilder()
-                        .AddText("MapTP is hidden to the taskbar tray!").Show();
+                new ToastContentBuilder()
+                       .AddText("MapTP is hidden to the taskbar tray!").Show();
             }
             else WindowState = WindowState.Minimized;
         }
@@ -234,7 +235,7 @@ namespace MapTP.App
         {
             if (HideCB.IsChecked.Value)
             {
-                var r=MessageBox.Show("Are you sure to close MapTP?\n(use minimize to hide MapTP into tray icon)", "Closing MapTP", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var r = MessageBox.Show("Are you sure to close MapTP?\n(use minimize to hide MapTP into tray icon)", "Closing MapTP", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (r != MessageBoxResult.Yes) return;
             }
             Close();
@@ -478,7 +479,7 @@ namespace MapTP.App
                         return;
                     }
                 }
-                if (config.TouchpadSizeX !=0 && config.TouchpadSizeY !=0) calibrated = true;
+                if (config.TouchpadSizeX != 0 && config.TouchpadSizeY != 0) calibrated = true;
                 else calibrated = false;
                 Tpsx.Text = config.tpsx.ToString();
                 Tpsy.Text = config.tpsy.ToString();
@@ -576,9 +577,9 @@ namespace MapTP.App
         private DateTime fingerDownTime;
         private int fingerStartAbsX, fingerStartAbsY; // starting absolute (0..65535) mapped coordinates
         private bool mouseDownSent; // whether we already issued a real left down (drag scenario)
-        private int TapDurationThresholdMs =180; // max duration to still count as a tap before auto-convert to drag
-        private int TapMovementThresholdXAbs =600; // movement threshold in absolute coordinate units (~2% of65535 width)
-        private int TapMovementThresholdYAbs =600; // movement threshold in absolute coordinate units (~2% of65535 width)
+        private int TapDurationThresholdMs = 180; // max duration to still count as a tap before auto-convert to drag
+        private int TapMovementThresholdXAbs = 600; // movement threshold in absolute coordinate units (~2% of65535 width)
+        private int TapMovementThresholdYAbs = 600; // movement threshold in absolute coordinate units (~2% of65535 width)
 
         // Allow user to apply sensitivity changes from UI
         private void OnApplySensitivityClick(object sender, RoutedEventArgs e)
@@ -607,9 +608,9 @@ namespace MapTP.App
         private void LoadSensitivityFromConfig()
         {
             if (config == null) return;
-            TapDurationThresholdMs = config.TapTimeMs <=0 ?180 : config.TapTimeMs;
-            TapMovementThresholdXAbs = config.TapMoveXAbs <=0 ?600 : config.TapMoveXAbs;
-            TapMovementThresholdYAbs = config.TapMoveYAbs <=0 ?600 : config.TapMoveYAbs;
+            TapDurationThresholdMs = config.TapTimeMs <= 0 ? 180 : config.TapTimeMs;
+            TapMovementThresholdXAbs = config.TapMoveXAbs <= 0 ? 600 : config.TapMoveXAbs;
+            TapMovementThresholdYAbs = config.TapMoveYAbs <= 0 ? 600 : config.TapMoveYAbs;
 
             var tapTimeBox = this.FindName("TapTimeBox") as System.Windows.Controls.TextBox;
             var tapMoveXBox = this.FindName("TapMoveXBox") as System.Windows.Controls.TextBox;
@@ -631,7 +632,7 @@ namespace MapTP.App
         /// <returns></returns>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            const int WM_INPUT =0x00FF;
+            const int WM_INPUT = 0x00FF;
             switch (msg)
             {
                 case WM_INPUT:
@@ -640,7 +641,7 @@ namespace MapTP.App
                     {
                         foreach (var x in digitizerData.Contacts)
                         {
-                            if (x.Identifier ==0) // limiting ContactId(Identifier) to0 is to read the first finger
+                            if (x.Identifier == 0) // limiting ContactId(Identifier) to0 is to read the first finger
                             {
                                 var curTip = x.IsButtonDown.Value; // finger touching surface
                                 if (started)
@@ -650,14 +651,14 @@ namespace MapTP.App
                                         int X, Y;
                                         X = (tpsx <= x.X ?
                                             (tpex >= x.X ?
-                                            (int)Math.Floor((((decimal)(x.X - tpsx) / tpgx * scgx) + scsx) / ScreenSizeX *65535)
-                                            : (int)Math.Floor((decimal)scex / ScreenSizeX *65535))
-                                            : (int)Math.Floor((decimal)scsx / ScreenSizeX *65535));
+                                            (int)Math.Floor((((decimal)(x.X - tpsx) / tpgx * scgx) + scsx) / ScreenSizeX * 65535)
+                                            : (int)Math.Floor((decimal)scex / ScreenSizeX * 65535))
+                                            : (int)Math.Floor((decimal)scsx / ScreenSizeX * 65535));
                                         Y = (tpsy <= x.Y ?
                                             (tpey >= x.Y ?
-                                            (int)Math.Floor((((decimal)(x.Y - tpsy) / tpgy * scgy) + scsy) / ScreenSizeY *65535)
-                                            : (int)Math.Floor((decimal)scey / ScreenSizeY *65535))
-                                            : (int)Math.Floor((decimal)scsy / ScreenSizeY *65535));
+                                            (int)Math.Floor((((decimal)(x.Y - tpsy) / tpgy * scgy) + scsy) / ScreenSizeY * 65535)
+                                            : (int)Math.Floor((decimal)scey / ScreenSizeY * 65535))
+                                            : (int)Math.Floor((decimal)scsy / ScreenSizeY * 65535));
 
                                         // Always move pointer (for visual feedback)
                                         mouseProcessor.MoveCursor(X, Y);
@@ -770,25 +771,25 @@ namespace MapTP.App
 
         public Config(int scsx, int tpsx, int scsy, int tpsy, int scex, int tpex, int tpey, int scey, int touchpadSizeX, int touchpadSizeY, bool tray, bool hideToTray, bool turtle,
  int tapTimeMs, int tapMoveXAbs, int tapMoveYAbs)
- {
- this.scsx = scsx;
- this.tpsx = tpsx;
- this.scsy = scsy;
- this.tpsy = tpsy;
- this.scex = scex;
- this.tpex = tpex;
- this.tpey = tpey;
- this.scey = scey;
- TouchpadSizeX = touchpadSizeX;
- TouchpadSizeY = touchpadSizeY;
- Tray = tray;
- HideToTray = hideToTray;
- Turtle = turtle;
- TapTimeMs = tapTimeMs;
- TapMoveXAbs = tapMoveXAbs;
- TapMoveYAbs = tapMoveYAbs;
- }
- public Config() : this(0,0,0,0,0,0,0,0,0,0, true, true, false,180,600,600)
- { }
- }
+        {
+            this.scsx = scsx;
+            this.tpsx = tpsx;
+            this.scsy = scsy;
+            this.tpsy = tpsy;
+            this.scex = scex;
+            this.tpex = tpex;
+            this.tpey = tpey;
+            this.scey = scey;
+            TouchpadSizeX = touchpadSizeX;
+            TouchpadSizeY = touchpadSizeY;
+            Tray = tray;
+            HideToTray = hideToTray;
+            Turtle = turtle;
+            TapTimeMs = tapTimeMs;
+            TapMoveXAbs = tapMoveXAbs;
+            TapMoveYAbs = tapMoveYAbs;
+        }
+        public Config() : this(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true, true, false, 180, 600, 600)
+        { }
+    }
 }

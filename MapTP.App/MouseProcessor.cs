@@ -64,13 +64,13 @@ namespace MapTP.App
         static extern uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
 
         // Useful constants for readability
-        const uint INPUT_MOUSE =0;
-        const uint MOUSEEVENTF_MOVE =0x0001;
-        const uint MOUSEEVENTF_LEFTDOWN =0x0002;
-        const uint MOUSEEVENTF_LEFTUP =0x0004;
-        const uint MOUSEEVENTF_MOVE_NOCOALESCE =0x2000; // May be ignored on older Windows
-        const uint MOUSEEVENTF_VIRTUALDESK =0x4000;
-        const uint MOUSEEVENTF_ABSOLUTE =0x8000;
+        const uint INPUT_MOUSE = 0;
+        const uint MOUSEEVENTF_MOVE = 0x0001;
+        const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+        const uint MOUSEEVENTF_LEFTUP = 0x0004;
+        const uint MOUSEEVENTF_MOVE_NOCOALESCE = 0x2000; // May be ignored on older Windows
+        const uint MOUSEEVENTF_VIRTUALDESK = 0x4000;
+        const uint MOUSEEVENTF_ABSOLUTE = 0x8000;
         #endregion
 
         // Simple smoothing to improve perceived pointer stability
@@ -81,10 +81,12 @@ namespace MapTP.App
 
         // Public knobs (can be wired to settings later if needed)
         public bool EnableSmoothing { get; set; } = true;
-        //0..1, closer to0 = smoother/slower, closer to1 = snappier
-        public double SmoothFactor { get; set; } =0.35;
+
+        // range: 0..1. closer to 0 -> smoother/slower, closer to 1 -> snappier
+        public double SmoothFactor { get; set; } = 0.35;
+
         // Deadzone in normalized absolute units (0..65535). Small deltas are ignored.
-        public int Deadzone { get; set; } =1;
+        public int Deadzone { get; set; } = 1;
 
         public void MoveCursor(int x, int y)
         {
@@ -93,7 +95,7 @@ namespace MapTP.App
             int rawY = y;
 
             // Initialize last values on first call
-            if (_lastOutX <0 || _lastOutY <0)
+            if (_lastOutX < 0 || _lastOutY < 0)
             {
                 _lastRawX = rawX;
                 _lastRawY = rawY;
@@ -130,10 +132,10 @@ namespace MapTP.App
                     {
                         dx = outX,
                         dy = outY,
-                        mouseData =0,
+                        mouseData = 0,
                         // Absolute movement across the virtual desktop; avoid OS coalescing if possible
                         dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_VIRTUALDESK | MOUSEEVENTF_MOVE_NOCOALESCE,
-                        time =0 // Windows will provide this
+                        time = 0 // Windows will provide this
                     }
                 }
             };
@@ -157,11 +159,11 @@ namespace MapTP.App
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx =0,
-                        dy =0,
-                        mouseData =0,
+                        dx = 0,
+                        dy = 0,
+                        mouseData = 0,
                         dwFlags = MOUSEEVENTF_LEFTDOWN, // MOUSEEVENTF_LEFTDOWN
-                        time =0 // Windows will provide this
+                        time = 0 // Windows will provide this
                     }
                 }
             };
@@ -179,11 +181,11 @@ namespace MapTP.App
                 {
                     mi = new MOUSEINPUT
                     {
-                        dx =0,
-                        dy =0,
-                        mouseData =0,
+                        dx = 0,
+                        dy = 0,
+                        mouseData = 0,
                         dwFlags = MOUSEEVENTF_LEFTUP, // MOUSEEVENTF_LEFTUP
-                        time =0 // Windows will provide this
+                        time = 0 // Windows will provide this
                     }
                 }
             };
